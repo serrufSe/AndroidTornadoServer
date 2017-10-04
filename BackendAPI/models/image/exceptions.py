@@ -1,0 +1,1 @@
+class EmptyFilesError(Exception): pass
