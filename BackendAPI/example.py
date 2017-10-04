@@ -8,7 +8,7 @@ from logging import getLogger, StreamHandler, INFO
 
 from collections import defaultdict
 from pyfcm import FCMNotification
-from tornado.web import RequestHandler, Application
+from tornado.web import RequestHandler, Application, HTTPError
 from tornado.platform.asyncio import AsyncIOMainLoop
 import lya
 
@@ -78,11 +78,16 @@ class ApplicationNotificationHandler(RequestHandler):
     async def post(self, *args, **kwargs):
         applications_sessions = repository.get_by_items(self.get_query_argument("item"))
 
+        try:
+            image = list(self.request.files.values())[0]
+        except IndexError:
+            raise HTTPError(400, "Missing image")
+
         def go(token: str):
             logger.info("Notify {} application".format(token))
 
             push_service.notify_single_device(registration_id=token, message_title="New event",
-                                              message_body="New event body", data_message=dict(payload="payload"))
+                                              message_body="New event body", data_message=dict(payload=image))
 
         await gather(*[get_event_loop().run_in_executor(thread_pool_executor, go, application_session.token)
                        for application_session in applications_sessions])
