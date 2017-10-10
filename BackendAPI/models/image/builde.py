@@ -1,4 +1,3 @@
-from base64 import b64encode
 from typing import Dict, List
 
 from tornado.httputil import HTTPFile, HTTPServerRequest
@@ -19,7 +18,7 @@ class ImageBuilder(object):
         except IndexError:
             raise EmptyFilesError()
 
-        self._image.source = b64encode(image['body']).decode('utf-8')
+        self._image.source = image['body']
         self._image.content_type = image['content_type']
         self.image.filename = image['filename']
 
